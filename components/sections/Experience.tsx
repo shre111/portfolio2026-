@@ -9,7 +9,7 @@ export function Experience() {
         <h2 className="font-display text-h2 mb-16">Experience</h2>
 
         <div className="space-y-12">
-          {content.experience.map((exp, idx) => (
+          {content.experience.map((exp) => (
             <div
               key={exp.id}
               className="relative pl-8 border-l-2 border-iris"
