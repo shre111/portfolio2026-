@@ -1,14 +1,17 @@
 'use client';
 
 import { content } from '@/lib/content';
+import { Reveal } from '@/components/ui/Reveal';
 
 export function About() {
   return (
     <section id="about" className="relative w-full py-32 px-6">
       <div className="max-w-4xl mx-auto">
-        <h2 className="font-display text-h2 mb-8">About</h2>
+        <Reveal as="h2" className="font-display text-h2 mb-8">
+          About
+        </Reveal>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <Reveal className="grid md:grid-cols-2 gap-8" delay={0.1}>
           {/* Summary */}
           <div>
             <p className="text-body leading-body mb-6 text-text">
@@ -48,7 +51,7 @@ export function About() {
               </ul>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
