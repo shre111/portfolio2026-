@@ -1,6 +1,6 @@
 'use client';
 
-import { ABOUT, EDUCATION } from '@/lib/content';
+import { content } from '@/lib/content';
 
 export function About() {
   return (
@@ -12,7 +12,7 @@ export function About() {
           {/* Summary */}
           <div>
             <p className="text-body leading-body mb-6 text-text">
-              {ABOUT.summary}
+              {content.summary}
             </p>
             <p className="text-body leading-body text-text-muted">
               Currently working with international teams on cutting-edge AI
@@ -28,10 +28,10 @@ export function About() {
                 Education
               </h3>
               <p className="font-sans font-medium text-text">
-                {EDUCATION.degree} — {EDUCATION.institution}
+                {content.skills[0].category} — {content.skills[0].category}
               </p>
               <p className="text-text-muted text-sm">
-                {EDUCATION.location} · {EDUCATION.year}
+                Ahmedabad · 2018–2021
               </p>
             </div>
 
@@ -40,7 +40,7 @@ export function About() {
                 Interests
               </h3>
               <ul className="space-y-2">
-                {ABOUT.interests.map((interest) => (
+                {content.interests.map((interest) => (
                   <li key={interest} className="text-text-muted text-sm">
                     • {interest}
                   </li>

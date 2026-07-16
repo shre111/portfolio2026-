@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { IDENTITY, ABOUT } from '@/lib/content';
+import { content } from '@/lib/content';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function Hero() {
@@ -31,7 +31,7 @@ export function Hero() {
               : 'opacity-0 translate-y-8'
           }`}
         >
-          {IDENTITY.name}
+          {content.identity.name}
         </h1>
 
         {/* Title */}
@@ -42,7 +42,7 @@ export function Hero() {
               : 'opacity-0 translate-y-8'
           }`}
         >
-          {IDENTITY.title}
+          {content.identity.title}
         </p>
 
         {/* Tagline */}
@@ -53,7 +53,7 @@ export function Hero() {
               : 'opacity-0 translate-y-8'
           }`}
         >
-          {IDENTITY.tagline}
+          {content.identity.tagline}
         </p>
 
         {/* CTA Button */}
