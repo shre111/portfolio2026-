@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* Design Tokens — Iris + Amber on Ink */
+:root {
+  /* base */
+  --ink: #08080F;
+  --ink-2: #10111C;
+  --line: #23253A;
+
+  /* text */
+  --text: #E9EAF3;
+  --text-muted: #7A7E9A;
+
+  /* signature */
+  --iris: #6E63F2;
+  --iris-soft: #A79DF9;
+  --amber: #F5B451;
+  --cyan: #4ED4C4;
+
+  /* fonts */
+  --font-clash: 'Clash Display', 'system-ui', sans-serif;
+  --font-general: 'General Sans', 'system-ui', sans-serif;
+  --font-jetbrains: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink text-text font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight;
+  }
+
+  h1 {
+    @apply text-display;
+  }
+
+  h2 {
+    @apply text-h2;
+  }
+
+  h3 {
+    @apply text-h3;
+  }
+
+  p {
+    @apply leading-body;
+  }
+
+  a {
+    @apply text-iris transition-colors hover:text-iris-soft;
+  }
+
+  button {
+    @apply transition-colors;
+  }
+
+  code {
+    @apply font-mono text-mono;
+  }
+}
+
+@layer utilities {
+  .text-uppercase {
+    @apply tracking-wide uppercase font-mono text-mono;
+  }
+
+  .glow-iris {
+    filter: drop-shadow(0 0 20px rgba(110, 99, 242, 0.5));
+  }
+
+  .glow-amber {
+    filter: drop-shadow(0 0 20px rgba(245, 180, 81, 0.5));
+  }
+
+  .blur-sm {
+    filter: blur(0.5px);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Smooth scrolling for supported browsers */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
