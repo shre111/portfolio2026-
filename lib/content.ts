@@ -44,6 +44,13 @@ export interface SkillGroup {
   skills: string[];
 }
 
+export interface Education {
+  degree: string;
+  institution: string;
+  location: string;
+  duration: string;
+}
+
 export interface Content {
   identity: Identity;
   summary: string;
@@ -51,6 +58,7 @@ export interface Content {
   aiProjects: Project[];
   fullStackProjects: Project[];
   skills: SkillGroup[];
+  education: Education;
   interests: string[];
 }
 
@@ -321,6 +329,12 @@ export const content: Content = {
       ],
     },
   ],
+  education: {
+    degree: 'BCA',
+    institution: 'JG University',
+    location: 'Ahmedabad',
+    duration: '2018–2021',
+  },
   interests: [
     'Drawing & Digital Art',
     'Emerging AI tech & libraries',

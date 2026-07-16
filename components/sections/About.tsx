@@ -28,10 +28,10 @@ export function About() {
                 Education
               </h3>
               <p className="font-sans font-medium text-text">
-                {content.skills[0].category} — {content.skills[0].category}
+                {content.education.degree} — {content.education.institution}
               </p>
               <p className="text-text-muted text-sm">
-                Ahmedabad · 2018–2021
+                {content.education.location} · {content.education.duration}
               </p>
             </div>
 
