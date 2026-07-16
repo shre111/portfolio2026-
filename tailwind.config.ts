@@ -38,6 +38,14 @@ const config: Config = {
         normal: '0em',
         wide: '0.12em',
       },
+      boxShadow: {
+        'glow-iris': '0 0 20px rgba(110, 99, 242, 0.5)',
+        'glow-amber': '0 0 20px rgba(245, 180, 81, 0.5)',
+      },
+      borderRadius: {
+        xs: '8px',
+        sm: '12px',
+      },
     },
   },
   plugins: [],
