@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { LayoutProvider } from '@/components/providers/LayoutProvider';
 
 export const metadata: Metadata = {
   title: 'Shreya Dantani | Senior Full Stack Engineer',
@@ -42,7 +43,7 @@ export default function RootLayout({
         <meta name="color-scheme" content="dark" />
       </head>
       <body>
-        {children}
+        <LayoutProvider>{children}</LayoutProvider>
       </body>
     </html>
   );
