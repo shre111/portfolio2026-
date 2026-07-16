@@ -1,14 +1,17 @@
 'use client';
 
 import { content } from '@/lib/content';
+import { Reveal } from '@/components/ui/Reveal';
 
 export function Experience() {
   return (
     <section id="experience" className="relative w-full py-32 px-6 bg-ink-2">
       <div className="max-w-4xl mx-auto">
-        <h2 className="font-display text-h2 mb-16">Experience</h2>
+        <Reveal as="h2" className="font-display text-h2 mb-16">
+          Experience
+        </Reveal>
 
-        <div className="space-y-12">
+        <Reveal className="space-y-12" stagger={0.12}>
           {content.experience.map((exp) => (
             <div
               key={exp.id}
@@ -47,7 +50,7 @@ export function Experience() {
               </div>
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );
