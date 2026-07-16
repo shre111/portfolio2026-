@@ -9,6 +9,7 @@ export const particleVertexShader = `
 uniform float uTime;
 uniform vec2 uMouse;
 uniform float uMouseInfluence;
+uniform float uIntro; // 0 -> 1 page-load ignition (§6)
 attribute vec3 aPosition;
 attribute float aDepth;
 
@@ -87,11 +88,13 @@ void main() {
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   // Slight size pop near the cursor on top of the depth-based sizing.
-  gl_PointSize = mix(2.0, 4.0, aDepth) + influence * 2.0;
+  // uIntro grows particles from nothing during the page-load ignition.
+  gl_PointSize = (mix(2.0, 4.0, aDepth) + influence * 2.0) * uIntro;
 }
 `;
 
 export const particleFragmentShader = `
+uniform float uIntro; // 0 -> 1 page-load ignition (§6)
 varying float vDepth;
 varying float vDistance;
 
@@ -112,8 +115,8 @@ void main() {
   vec3 irisSoft = vec3(0.655, 0.616, 0.976);  // #A79DF9
   
   vec3 color = mix(iris, irisSoft, vDepth);
-  
-  // Additive blending + fade
-  gl_FragColor = vec4(color, alpha * 0.8);
+
+  // Additive blending + fade; uIntro fades the whole field in on load.
+  gl_FragColor = vec4(color, alpha * 0.8 * uIntro);
 }
 `;

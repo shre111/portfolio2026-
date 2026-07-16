@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { gsap } from 'gsap';
 import * as THREE from 'three';
 import { useMousePosition } from '@/hooks/useMousePosition';
+import { useScrollStore } from '@/lib/store';
 import {
   particleVertexShader,
   particleFragmentShader,
@@ -22,6 +24,7 @@ interface LatentFieldProps {
 export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const mousePos = useMousePosition();
+  const reducedMotion = useScrollStore((s) => s.reducedMotion);
 
   // Base positions + per-particle depth. Memoized so we only allocate when
   // the particle count changes, never per frame (§7 perf budget).
@@ -52,9 +55,28 @@ export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
       uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2(0.5, 0.5) },
       uMouseInfluence: { value: 0.6 },
+      uIntro: { value: 0 },
     }),
     []
   );
+
+  // Page-load ignition: grow + fade the field in from nothing (§6).
+  // Reduced motion → fully lit immediately, no animation (§9).
+  useEffect(() => {
+    if (reducedMotion) {
+      uniforms.uIntro.value = 1;
+      return;
+    }
+    uniforms.uIntro.value = 0;
+    const tween = gsap.to(uniforms.uIntro, {
+      value: 1,
+      duration: 1.4,
+      ease: 'power2.out',
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [reducedMotion, uniforms]);
 
   useFrame(({ clock }) => {
     const material = materialRef.current;

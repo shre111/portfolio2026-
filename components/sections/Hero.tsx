@@ -1,18 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import { content } from '@/lib/content';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useScrollStore } from '@/lib/store';
 
+/**
+ * Hero — the page-load ignition (CLAUDE.md §6). The particle field ignites
+ * (handled in LatentField), then the name, title, tagline, CTAs and scroll hint
+ * fade/rise in as one coordinated timeline. Reduced motion (§9): everything is
+ * visible immediately with no animation.
+ */
 export function Hero() {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const reducedMotion = useReducedMotion();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useScrollStore((s) => s.reducedMotion);
 
-  useEffect(() => {
-    // Trigger entrance animation after first paint
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+  useLayoutEffect(() => {
+    const el = rootRef.current;
+    if (!el || reducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        defaults: { ease: 'power3.out', duration: 0.7 },
+      });
+      // Start slightly after the field begins igniting, then cascade the text.
+      tl.from('[data-hero="name"]', { opacity: 0, y: 24 }, 0.35)
+        .from('[data-hero="title"]', { opacity: 0, y: 16 }, '-=0.45')
+        .from('[data-hero="tagline"]', { opacity: 0, y: 16 }, '-=0.45')
+        .from('[data-hero="cta"]', { opacity: 0, y: 16 }, '-=0.4')
+        .from('[data-hero="hint"]', { opacity: 0, y: 12 }, '-=0.3');
+    }, el);
+
+    return () => ctx.revert();
+  }, [reducedMotion]);
 
   return (
     <section
@@ -22,48 +42,33 @@ export function Hero() {
       {/* Background gradient scrim (subtle) */}
       <div className="absolute inset-0 bg-gradient-to-b from-ink via-ink to-ink-2 pointer-events-none" />
 
-      <div className="relative z-10 max-w-3xl mx-auto text-center">
-        {/* Name - Main headline */}
+      <div ref={rootRef} className="relative z-10 max-w-3xl mx-auto text-center">
+        {/* Name — main headline */}
         <h1
-          className={`font-display text-display leading-tight mb-4 transition-all duration-700 ${
-            isLoaded && !reducedMotion
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-8'
-          }`}
+          data-hero="name"
+          className="font-display text-display leading-tight mb-4"
         >
           {content.identity.name}
         </h1>
 
         {/* Title */}
         <p
-          className={`text-xl font-sans text-text-muted mb-6 transition-all duration-700 delay-100 ${
-            isLoaded && !reducedMotion
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-8'
-          }`}
+          data-hero="title"
+          className="text-xl font-sans text-text-muted mb-6"
         >
           {content.identity.title}
         </p>
 
         {/* Tagline */}
         <p
-          className={`text-mono text-iris-soft tracking-wide uppercase text-sm mb-12 transition-all duration-700 delay-200 ${
-            isLoaded && !reducedMotion
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-8'
-          }`}
+          data-hero="tagline"
+          className="font-mono text-iris-soft tracking-wide uppercase text-sm mb-12"
         >
           {content.identity.tagline}
         </p>
 
-        {/* CTA Button */}
-        <div
-          className={`flex gap-4 justify-center transition-all duration-700 delay-300 ${
-            isLoaded && !reducedMotion
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-8'
-          }`}
-        >
+        {/* CTAs */}
+        <div data-hero="cta" className="flex gap-4 justify-center">
           <a
             href="#contact"
             className="px-8 py-3 bg-iris text-ink font-medium rounded-xs hover:bg-iris-soft transition-colors"
@@ -80,13 +85,10 @@ export function Hero() {
 
         {/* Scroll hint */}
         <div
-          className={`absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-700 delay-500 ${
-            isLoaded && !reducedMotion
-              ? 'opacity-60 translate-y-0'
-              : 'opacity-0 translate-y-8'
-          }`}
+          data-hero="hint"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-60"
         >
-          <div className="flex flex-col items-center gap-2 text-text-muted text-mono text-xs">
+          <div className="flex flex-col items-center gap-2 text-text-muted font-mono text-xs">
             <span>Scroll to explore</span>
             <svg
               className="w-4 h-4 animate-bounce"
