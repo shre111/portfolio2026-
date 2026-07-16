@@ -140,6 +140,8 @@ export const content: Content = {
         '88%+ profitability on exits',
       ],
       github: 'github.com/shre111/Trader-Ai',
+      category: 'ai',
+      featured: true,
     },
     {
       id: 'ai-research-engine',

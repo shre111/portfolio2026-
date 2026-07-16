@@ -5,7 +5,6 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { SectionId } from './content';
 
 export interface ScrollStore {
   // Scroll state
