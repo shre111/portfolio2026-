@@ -1,86 +1,89 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useMousePosition } from '@/hooks/useMousePosition';
-
-// Import shaders as strings
-import vertexShader from '@/lib/shaders/particleVertex.glsl?raw';
-import fragmentShader from '@/lib/shaders/particleFragment.glsl?raw';
+import {
+  particleVertexShader,
+  particleFragmentShader,
+} from '@/lib/shaders/particleShaders';
 
 interface LatentFieldProps {
   particleCount?: number;
 }
 
+/**
+ * LatentField — the signature particle system (CLAUDE.md §5).
+ * A single THREE.Points cloud whose positions drift via curl noise in the
+ * vertex shader and ripple toward the cursor. Rendered declaratively so R3F
+ * owns the lifecycle (no imperative scene-graph mutation).
+ */
 export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const shaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
   const mousePos = useMousePosition();
-  const { camera } = useThree();
 
-  useEffect(() => {
-    if (!pointsRef.current) return;
-
-    // Generate particle positions and depths
+  // Base positions + per-particle depth. Memoized so we only allocate when
+  // the particle count changes, never per frame (§7 perf budget).
+  const { positions, depths } = useMemo(() => {
     const positions = new Float32Array(particleCount * 3);
     const depths = new Float32Array(particleCount);
 
     for (let i = 0; i < particleCount; i++) {
-      // Distribute particles in a sphere
+      // Even-ish distribution inside a spherical shell.
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
-      const radius = 20 + Math.random() * 40; // 20-60 units from center
+      const radius = 20 + Math.random() * 40; // 20–60 units from center
 
       positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = radius * Math.cos(phi);
 
-      // Depth for coloring (0 = inner/dark, 1 = outer/bright)
+      // Depth drives the iris → iris-soft color mix (0 = deep, 1 = near).
       depths[i] = Math.random();
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('aPosition', new THREE.BufferAttribute(positions.slice(), 3));
-    geometry.setAttribute('aDepth', new THREE.BufferAttribute(depths, 1));
-
-    // Create shader material
-    const material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-        uMouseInfluence: { value: 0.5 },
-      },
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    shaderMaterialRef.current = material;
-
-    const points = new THREE.Points(geometry, material);
-    pointsRef.current.add(points);
-
-    return () => {
-      geometry.dispose();
-      material.dispose();
-    };
+    return { positions, depths };
   }, [particleCount]);
 
-  // Animation loop
-  useFrame(({ clock }) => {
-    if (!shaderMaterialRef.current) return;
+  // Uniforms are created once; values are mutated in-place each frame.
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+      uMouseInfluence: { value: 0.6 },
+    }),
+    []
+  );
 
-    // Update uniforms
-    shaderMaterialRef.current.uniforms.uTime.value = clock.getElapsedTime();
-    shaderMaterialRef.current.uniforms.uMouse.value.set(
+  useFrame(({ clock }) => {
+    const material = materialRef.current;
+    if (!material) return;
+
+    material.uniforms.uTime.value = clock.getElapsedTime();
+    // Normalized cursor (0–1); invert Y so up is up in clip space.
+    material.uniforms.uMouse.value.set(
       mousePos.current.x,
-      1 - mousePos.current.y // Invert Y for WebGL
+      1 - mousePos.current.y
     );
   });
 
-  return <group ref={pointsRef} />;
+  return (
+    <points>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-aPosition" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-aDepth" args={[depths, 1]} />
+      </bufferGeometry>
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={particleVertexShader}
+        fragmentShader={particleFragmentShader}
+        uniforms={uniforms}
+        transparent
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
 }

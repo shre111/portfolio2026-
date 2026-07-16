@@ -10,7 +10,7 @@ export function Scene() {
     <div className="fixed inset-0 w-full h-screen pointer-events-none">
       <Canvas
         dpr={[1, 1.75]}
-        frameloop="auto"
+        frameloop="always"
         camera={{
           position: [0, 0, 50],
           fov: 75,
