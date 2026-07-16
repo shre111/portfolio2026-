@@ -1,3 +1,21 @@
+// ===== TYPE DEFINITIONS =====
+
+export type ProjectCategory = 'ai' | 'fullstack';
+export type SectionId = 'hero' | 'about' | 'experience' | 'ai-projects' | 'fullstack-projects' | 'skills' | 'contact';
+
+export interface Identity {
+  name: string;
+  title: string;
+  tagline: string;
+  location: string;
+  email: string;
+  phone: string;
+  links: {
+    linkedin: string;
+    github: string;
+  };
+}
+
 export interface Experience {
   id: string;
   title: string;
@@ -17,7 +35,8 @@ export interface Project {
   metrics?: string[];
   link?: string;
   github?: string;
-  category: 'ai' | 'fullstack';
+  category: ProjectCategory;
+  featured?: boolean;
 }
 
 export interface SkillGroup {
@@ -26,18 +45,7 @@ export interface SkillGroup {
 }
 
 export interface Content {
-  identity: {
-    name: string;
-    title: string;
-    tagline: string;
-    location: string;
-    email: string;
-    phone: string;
-    links: {
-      linkedin: string;
-      github: string;
-    };
-  };
+  identity: Identity;
   summary: string;
   experience: Experience[];
   aiProjects: Project[];
@@ -317,3 +325,35 @@ export const content: Content = {
     'Travelling',
   ],
 };
+
+// ===== UTILITY FUNCTIONS =====
+
+/**
+ * Get all projects, optionally filtered by category
+ */
+export function getAllProjects(category?: ProjectCategory): Project[] {
+  if (category === 'ai') return content.aiProjects;
+  if (category === 'fullstack') return content.fullStackProjects;
+  return [...content.aiProjects, ...content.fullStackProjects];
+}
+
+/**
+ * Get featured projects only
+ */
+export function getFeaturedProjects(): Project[] {
+  return getAllProjects().filter(p => p.featured !== false);
+}
+
+/**
+ * Get all skills as flat array
+ */
+export function getAllSkills(): string[] {
+  return content.skills.flatMap(group => group.skills);
+}
+
+/**
+ * Get current position
+ */
+export function getCurrentPosition(): Experience | undefined {
+  return content.experience.find(exp => exp.current);
+}
