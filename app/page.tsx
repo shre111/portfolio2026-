@@ -7,6 +7,7 @@ import { Experience } from '@/components/sections/Experience';
 import { AIProjects } from '@/components/sections/AIProjects';
 import { FullStackProjects } from '@/components/sections/FullStackProjects';
 import { Skills } from '@/components/sections/Skills';
+import { Contact } from '@/components/sections/Contact';
 
 // Lazy-load 3D scene to not block first paint
 const Scene = dynamic(() => import('@/components/canvas/Scene').then(m => ({ default: m.Scene })), {
@@ -28,14 +29,7 @@ export default function Home() {
         <AIProjects />
         <FullStackProjects />
         <Skills />
-
-        {/* Placeholder sections for future phases (Phase 3) */}
-        <section className="py-32 px-6 border-t border-line">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="font-display text-h2">Contact</h2>
-            <p className="text-text-muted mt-4">Coming soon...</p>
-          </div>
-        </section>
+        <Contact />
       </div>
     </main>
   );
