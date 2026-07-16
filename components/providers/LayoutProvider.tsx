@@ -1,12 +1,13 @@
 'use client';
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useScrollProgress } from '@/hooks/useScrollProgress';
+import { useLenis } from '@/hooks/useLenis';
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
-  // Initialize hooks to track motion preferences and scroll progress
+  // Detect motion preference first (Lenis reads it from the store), then drive
+  // smooth scroll + publish scroll progress.
   useReducedMotion();
-  useScrollProgress();
+  useLenis();
 
   return <>{children}</>;
 }
