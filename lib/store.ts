@@ -64,12 +64,3 @@ export const useScrollStore = create<ScrollStore>()(
     { name: 'scroll-store' }
   )
 );
-
-export const useScrollStore = create<ScrollState>((set) => ({
-  scrollProgress: 0,
-  activeSection: 'hero',
-  reducedMotion: false,
-  setScrollProgress: (progress) => set({ scrollProgress: progress }),
-  setActiveSection: (section) => set({ activeSection: section }),
-  setReducedMotion: (reduced) => set({ reducedMotion: reduced }),
-}));
