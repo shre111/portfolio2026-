@@ -10,7 +10,9 @@ uniform float uTime;
 uniform vec2 uMouse;
 uniform float uMouseInfluence;
 uniform float uIntro; // 0 -> 1 page-load ignition (§6)
+uniform float uFormation; // 0 = ambient nebula, 1 = fully formed (§5)
 attribute vec3 aPosition;
+attribute vec3 aFormationTarget; // per-particle target for the active formation
 attribute float aDepth;
 
 varying float vDepth;
@@ -29,17 +31,18 @@ vec3 permute(vec3 x) {
   return mod289(((x * 34.0) + 1.0) * x);
 }
 
+// Canonical Ashima/Gustavson 2D simplex noise. Returns ~[-1, 1].
 float snoise(vec2 v) {
   const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
   vec2 i = floor(v + dot(v, C.yy));
   vec2 x0 = v - i + dot(i, C.xx);
-  vec2 x12;
-  x12.x = x0.x - 0.0 + C.xx;
-  x12.y = x0.y - 0.0 + C.xx;
-  vec2 x22 = x0 - vec2(1.0, 1.0) + C.xx * 2.0;
+  // Determine which simplex triangle we're in.
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
   i = mod289(i);
-  vec3 p = permute(permute(i.y + vec3(0.0, C.xx)) + i.x + vec3(0.0, C.x, C.y));
-  vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.x, x12.x), dot(x22, x22)), 0.0);
+  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+  vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
   m = m * m;
   m = m * m;
   vec3 x = 2.0 * fract(p * C.www) - 1.0;
@@ -49,7 +52,7 @@ float snoise(vec2 v) {
   m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
   vec3 g;
   g.x = a0.x * x0.x + h.x * x0.y;
-  g.yz = a0.yz * x12.xy + h.yz * x12.xy;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
   return 130.0 * dot(m, g);
 }
 
@@ -62,10 +65,13 @@ vec3 curl(vec3 p) {
 }
 
 void main() {
-  vec3 pos = aPosition;
+  // Ambient position: base point + organic curl-noise drift.
+  vec3 ambient = aPosition;
+  ambient += curl(ambient + uTime * 0.1);
 
-  // Curl noise drift — organic, continuous motion of the whole field.
-  pos += curl(pos + uTime * 0.1);
+  // Blend from the drifting nebula toward the formation target (§5). At
+  // uFormation = 0 the field drifts freely; at 1 it snaps into the structure.
+  vec3 pos = mix(ambient, aFormationTarget, uFormation);
 
   // Cursor perturbation.
   // gl_FragCoord does not exist in a vertex shader, so derive the particle's
@@ -95,6 +101,8 @@ void main() {
 
 export const particleFragmentShader = `
 uniform float uIntro; // 0 -> 1 page-load ignition (§6)
+uniform float uFormation; // 0 -> 1 formation blend (§5)
+uniform vec3 uFormationColor; // tint the field takes on when formed
 varying float vDepth;
 varying float vDistance;
 
@@ -114,7 +122,9 @@ void main() {
   vec3 iris = vec3(0.431, 0.388, 0.949);      // #6E63F2
   vec3 irisSoft = vec3(0.655, 0.616, 0.976);  // #A79DF9
   
-  vec3 color = mix(iris, irisSoft, vDepth);
+  vec3 baseColor = mix(iris, irisSoft, vDepth);
+  // When formed, shift toward the formation's tint (e.g. cyan terrain).
+  vec3 color = mix(baseColor, uFormationColor, uFormation * 0.7);
 
   // Additive blending + fade; uIntro fades the whole field in on load.
   gl_FragColor = vec4(color, alpha * 0.8 * uIntro);
