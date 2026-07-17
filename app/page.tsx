@@ -8,6 +8,7 @@ import { AIProjects } from '@/components/sections/AIProjects';
 import { FullStackProjects } from '@/components/sections/FullStackProjects';
 import { Skills } from '@/components/sections/Skills';
 import { Contact } from '@/components/sections/Contact';
+import { Cursor } from '@/components/ui/Cursor';
 
 // Lazy-load 3D scene to not block first paint
 const Scene = dynamic(() => import('@/components/canvas/Scene').then(m => ({ default: m.Scene })), {
@@ -18,6 +19,9 @@ const Scene = dynamic(() => import('@/components/canvas/Scene').then(m => ({ def
 export default function Home() {
   return (
     <main className="w-full bg-ink relative">
+      {/* Custom cursor (fine-pointer, motion-safe devices only) */}
+      <Cursor />
+
       {/* Fixed 3D particle field */}
       <Scene />
 

@@ -124,6 +124,48 @@
   box-sizing: border-box;
 }
 
+/* ===== CUSTOM CURSOR (§4) ===== */
+/* Only hide the native cursor once the JS custom cursor is actually active. */
+.has-custom-cursor,
+.has-custom-cursor a,
+.has-custom-cursor button {
+  cursor: none;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 100;
+  border-radius: 9999px;
+  will-change: transform;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--iris-soft);
+}
+
+.cursor-ring {
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border: 1px solid var(--iris);
+  transition: width 0.2s ease, height 0.2s ease, margin 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.cursor-ring--hover {
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  background: rgba(110, 99, 242, 0.12);
+}
+
 /* ===== LENIS SMOOTH SCROLL ===== */
 /* Lenis toggles these classes on <html>; it manages scroll itself, so native
    smooth behavior must yield to it while active. */
