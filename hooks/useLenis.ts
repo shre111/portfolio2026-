@@ -30,9 +30,20 @@ export function useLenis(): void {
           document.documentElement.scrollHeight - window.innerHeight;
         setScrollProgress(max > 0 ? window.scrollY / max : 0);
       };
+      const handleScrollTo = (e: Event) => {
+        const selector = (e as CustomEvent<string>).detail;
+        document.querySelector(selector)?.scrollIntoView();
+      };
       handleNativeScroll();
       window.addEventListener('scroll', handleNativeScroll, { passive: true });
-      return () => window.removeEventListener('scroll', handleNativeScroll);
+      window.addEventListener('lenis:scrollTo', handleScrollTo as EventListener);
+      return () => {
+        window.removeEventListener('scroll', handleNativeScroll);
+        window.removeEventListener(
+          'lenis:scrollTo',
+          handleScrollTo as EventListener
+        );
+      };
     }
 
     const lenis = new Lenis({
@@ -51,8 +62,18 @@ export function useLenis(): void {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    // Nav clicks ask Lenis to smooth-scroll to a section.
+    const handleScrollTo = (e: Event) => {
+      lenis.scrollTo((e as CustomEvent<string>).detail);
+    };
+    window.addEventListener('lenis:scrollTo', handleScrollTo as EventListener);
+
     return () => {
       gsap.ticker.remove(raf);
+      window.removeEventListener(
+        'lenis:scrollTo',
+        handleScrollTo as EventListener
+      );
       lenis.destroy();
     };
   }, [reducedMotion, setScrollProgress]);
