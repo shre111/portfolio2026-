@@ -27,7 +27,8 @@ export function ProjectCard({ project, index, featured = false }: ProjectCardPro
 
   return (
     <article
-      className={`group relative flex h-full flex-col rounded-sm border border-line bg-ink-2 transition-shadow duration-300 hover:shadow-glow-iris ${
+      data-cursor="hover"
+      className={`group relative flex h-full flex-col rounded-sm border border-line bg-ink-2 transition duration-300 hover:-translate-y-1 hover:border-iris hover:shadow-glow-iris ${
         featured ? 'p-8 md:p-10' : 'p-6 md:p-8'
       }`}
     >
