@@ -12,7 +12,7 @@
 
 export type FormationType = 'constellation' | 'network' | 'candlestick';
 
-/** Which section triggers which formation. null = ambient nebula. */
+/** Base mapping: which section triggers which formation. null = ambient. */
 export function sectionToFormation(section: string | null): FormationType | null {
   switch (section) {
     case 'ai-projects':
@@ -22,6 +22,22 @@ export function sectionToFormation(section: string | null): FormationType | null
     default:
       return null;
   }
+}
+
+/**
+ * Resolve the active formation, accounting for sub-scroll within a section.
+ * The AI Projects section holds both showcases (§5): the multi-agent network
+ * graph in its first half, then the AI Trader candlestick terrain in its second
+ * half — the field dissolves to the nebula and reforms between the two.
+ */
+export function resolveFormation(
+  section: string | null,
+  sectionProgress: Record<string, number>
+): FormationType | null {
+  if (section === 'ai-projects') {
+    return (sectionProgress['ai-projects'] ?? 0) < 0.5 ? 'network' : 'candlestick';
+  }
+  return sectionToFormation(section);
 }
 
 /** Per-formation tint, as linear-ish RGB 0–1 matching the design tokens (§4). */
@@ -110,15 +126,59 @@ export function buildNetwork(count: number, nodeCount = 14): Float32Array {
   return arr;
 }
 
-/** Dispatch to the right builder. Candlestick lands in the next PR. */
+/**
+ * Candlestick terrain / equity-curve ridge (AI Trader §5). Columns march along
+ * x; each column's height follows a rising, noisy equity curve. Half the
+ * particles fill the vertical "candles" up to their top, half trace the equity
+ * ridge along the tops. Rendered in cyan (data-viz color).
+ */
+export function buildCandlestick(count: number, columns = 40): Float32Array {
+  const arr = new Float32Array(count * 3);
+
+  // Precompute a rising equity curve with upward drift + jitter.
+  const heights: number[] = [];
+  let equity = -12;
+  for (let c = 0; c < columns; c++) {
+    equity += Math.random() * 2.2 - 0.6; // mean positive → climbs
+    heights.push(equity);
+  }
+
+  const xSpan = 56; // -28 → 28
+  const baseline = -16;
+  const colWidth = xSpan / columns;
+
+  for (let i = 0; i < count; i++) {
+    const c = i % columns;
+    const x = -xSpan / 2 + (c / (columns - 1)) * xSpan;
+    const top = heights[c];
+
+    let y: number;
+    if (i % 2 === 0) {
+      // Candle body: baseline up to this column's top.
+      y = baseline + Math.random() * (top - baseline);
+    } else {
+      // Equity ridge: hover near the tops.
+      y = top + (Math.random() - 0.5) * 1.5;
+    }
+
+    arr[i * 3] = x + (Math.random() - 0.5) * colWidth * 0.7;
+    arr[i * 3 + 1] = y;
+    arr[i * 3 + 2] = (Math.random() - 0.5) * 6;
+  }
+
+  return arr;
+}
+
+/** Dispatch to the right builder. */
 export function buildFormation(type: FormationType, count: number): Float32Array {
   switch (type) {
     case 'constellation':
       return buildConstellation(count);
     case 'network':
       return buildNetwork(count);
+    case 'candlestick':
+      return buildCandlestick(count);
     default:
-      // Not yet implemented → fall back to a constellation so nothing breaks.
       return buildConstellation(count);
   }
 }

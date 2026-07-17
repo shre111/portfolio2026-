@@ -8,7 +8,7 @@ import { useMousePosition } from '@/hooks/useMousePosition';
 import { useScrollStore } from '@/lib/store';
 import {
   buildFormation,
-  sectionToFormation,
+  resolveFormation,
   FORMATION_COLORS,
   type FormationType,
 } from '@/lib/formations';
@@ -26,7 +26,6 @@ export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
   const formationAttrRef = useRef<THREE.BufferAttribute>(null);
   const mousePos = useMousePosition();
   const reducedMotion = useScrollStore((s) => s.reducedMotion);
-  const activeSection = useScrollStore((s) => s.activeSection);
 
   // Base positions + per-particle depth. Memoized so we only allocate when the
   // particle count changes, never per frame (§7 perf budget).
@@ -79,16 +78,9 @@ export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
     []
   );
 
-  // Which formation the current section wants, and which is currently loaded
-  // into the GPU buffer. Refs so useFrame reads them without re-subscribing.
-  const desiredFormation = useRef<FormationType | null>(null);
+  // Which formation is currently loaded into the GPU target buffer. Ref so
+  // useFrame reads/writes it without triggering re-renders.
   const loadedFormation = useRef<FormationType | null>(null);
-
-  useEffect(() => {
-    desiredFormation.current = reducedMotion
-      ? null
-      : sectionToFormation(activeSection);
-  }, [activeSection, reducedMotion]);
 
   // Page-load ignition: grow + fade the field in from nothing (§6).
   useEffect(() => {
@@ -117,7 +109,11 @@ export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
       1 - mousePos.current.y
     );
 
-    const desired = desiredFormation.current;
+    // Read scroll state non-reactively so scrolling never re-renders the field.
+    const { activeSection, sectionProgress } = useScrollStore.getState();
+    const desired = reducedMotion
+      ? null
+      : resolveFormation(activeSection, sectionProgress);
 
     // Swap the target buffer only while the field is essentially ambient, so
     // the structure never visibly jumps between formations.
