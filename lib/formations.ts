@@ -63,11 +63,60 @@ export function buildConstellation(count: number, clusters = 7): Float32Array {
   return arr;
 }
 
-/** Dispatch to the right builder. Networks/candlestick land in later PRs. */
+/**
+ * Network graph (AI Projects / multi-agent §5): particles gather at graph nodes
+ * and string along the edges between them, reading as an agent/embedding graph.
+ */
+export function buildNetwork(count: number, nodeCount = 14): Float32Array {
+  const arr = new Float32Array(count * 3);
+
+  // Nodes scattered across a wide, shallow volume facing the camera.
+  const nodes: Array<[number, number, number]> = [];
+  for (let n = 0; n < nodeCount; n++) {
+    nodes.push([
+      (Math.random() - 0.5) * 52,
+      (Math.random() - 0.5) * 32,
+      (Math.random() - 0.5) * 24,
+    ]);
+  }
+
+  // Edges: a ring plus longer skip-links keep the graph connected and busy.
+  const edges: Array<[number, number]> = [];
+  for (let n = 0; n < nodeCount; n++) {
+    edges.push([n, (n + 1) % nodeCount]);
+    edges.push([n, (n + 3) % nodeCount]);
+  }
+
+  // ~35% of particles form the node clusters; the rest ride the edges.
+  const nodeParticles = Math.floor(count * 0.35);
+
+  for (let i = 0; i < count; i++) {
+    if (i < nodeParticles) {
+      const [x, y, z] = nodes[i % nodeCount];
+      arr[i * 3] = x + (Math.random() - 0.5) * 3;
+      arr[i * 3 + 1] = y + (Math.random() - 0.5) * 3;
+      arr[i * 3 + 2] = z + (Math.random() - 0.5) * 3;
+    } else {
+      const [a, b] = edges[i % edges.length];
+      const na = nodes[a];
+      const nb = nodes[b];
+      const t = Math.random();
+      arr[i * 3] = na[0] + (nb[0] - na[0]) * t + (Math.random() - 0.5) * 1.2;
+      arr[i * 3 + 1] = na[1] + (nb[1] - na[1]) * t + (Math.random() - 0.5) * 1.2;
+      arr[i * 3 + 2] = na[2] + (nb[2] - na[2]) * t + (Math.random() - 0.5) * 1.2;
+    }
+  }
+
+  return arr;
+}
+
+/** Dispatch to the right builder. Candlestick lands in the next PR. */
 export function buildFormation(type: FormationType, count: number): Float32Array {
   switch (type) {
     case 'constellation':
       return buildConstellation(count);
+    case 'network':
+      return buildNetwork(count);
     default:
       // Not yet implemented → fall back to a constellation so nothing breaks.
       return buildConstellation(count);
