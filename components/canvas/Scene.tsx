@@ -1,23 +1,34 @@
 'use client';
 
+import { useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, Vignette, EffectComposer } from '@react-three/postprocessing';
 import { LatentField } from './LatentField';
 import { CameraRig } from './CameraRig';
 import { useDeviceTier, TIER_PARTICLE_COUNT } from '@/hooks/useDeviceTier';
+import { useRenderActive } from '@/hooks/useRenderActive';
 
 export function Scene() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const tier = useDeviceTier();
+  // Hooks must run before any early return, so this stays above the low-tier bail.
+  const active = useRenderActive(wrapperRef);
 
   // Low-power devices skip the field entirely and fall back to the static
   // gradient + 2D content already in the DOM (§7).
   if (tier === 'low') return null;
 
   return (
-    <div className="fixed inset-0 w-full h-screen pointer-events-none">
+    <div
+      ref={wrapperRef}
+      className="fixed inset-0 w-full h-screen pointer-events-none"
+      aria-hidden="true"
+    >
       <Canvas
         dpr={[1, 1.75]}
-        frameloop="always"
+        // Stop drawing entirely when the tab is hidden or the canvas is
+        // off-screen; resume seamlessly when it comes back (§7).
+        frameloop={active ? 'always' : 'never'}
         camera={{
           position: [0, 0, 50],
           fov: 75,
