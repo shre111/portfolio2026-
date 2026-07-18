@@ -13,11 +13,17 @@ export const TIER_PARTICLE_COUNT: Record<DeviceTier, number> = {
 
 /**
  * useDeviceTier — classify the device so the particle field can scale to it
- * (CLAUDE.md §7). Starts from static hints (core count, pointer type), then runs
- * a short FPS probe and downgrades if the device can't hold a smooth frame rate.
+ * (CLAUDE.md §7).
  *
- * Starts at 'mid' so we never ship 15k particles to a machine we haven't
- * measured yet.
+ * IMPORTANT: only the *static* hints may select 'low', because 'low' removes
+ * the signature field entirely. The FPS probe may only step high -> mid.
+ * An earlier version let the probe drop straight to 'low', and because it ran
+ * during hydration/compile — the most expensive moment of page load — it
+ * regularly measured a false low frame rate and silently deleted the whole 3D
+ * scene on perfectly capable machines.
+ *
+ * The probe is also deferred until the page has settled so it measures the
+ * steady state rather than startup jank.
  */
 export function useDeviceTier(): DeviceTier {
   const [tier, setTier] = useState<DeviceTier>('mid');
@@ -26,31 +32,41 @@ export function useDeviceTier(): DeviceTier {
     // Static hints: core count + whether this is a touch/coarse-pointer device.
     const cores = navigator.hardwareConcurrency ?? 4;
     const coarse = window.matchMedia('(pointer: coarse)').matches;
+
+    // Only genuinely weak hardware is classified 'low' (no field at all).
     const initial: DeviceTier =
-      cores >= 8 && !coarse ? 'high' : cores >= 4 ? 'mid' : 'low';
+      cores <= 2 ? 'low' : cores >= 8 && !coarse ? 'high' : 'mid';
     setTier(initial);
 
     if (initial === 'low') return;
 
-    // Quick ~600ms FPS probe; downgrade a tier if frames are already dropping.
-    let frames = 0;
     let raf = 0;
-    const start = performance.now();
+    let frames = 0;
+    let start = 0;
 
-    const probe = () => {
-      frames += 1;
-      const elapsed = performance.now() - start;
-      if (elapsed < 600) {
-        raf = requestAnimationFrame(probe);
-        return;
-      }
-      const fps = (frames / elapsed) * 1000;
-      if (fps < 30) setTier('low');
-      else if (fps < 50) setTier((t) => (t === 'high' ? 'mid' : t));
+    // Measure the steady state, not startup jank.
+    const startProbe = () => {
+      start = performance.now();
+      const probe = () => {
+        frames += 1;
+        const elapsed = performance.now() - start;
+        if (elapsed < 1000) {
+          raf = requestAnimationFrame(probe);
+          return;
+        }
+        const fps = (frames / elapsed) * 1000;
+        // Never drop to 'low' here — a transient dip must not remove the field.
+        if (fps < 45) setTier((t) => (t === 'high' ? 'mid' : t));
+      };
+      raf = requestAnimationFrame(probe);
     };
 
-    raf = requestAnimationFrame(probe);
-    return () => cancelAnimationFrame(raf);
+    const timer = window.setTimeout(startProbe, 2500);
+
+    return () => {
+      window.clearTimeout(timer);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return tier;

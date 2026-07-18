@@ -92,10 +92,15 @@ void main() {
   vDepth = aDepth;
   vDistance = length(pos);
 
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-  // Slight size pop near the cursor on top of the depth-based sizing.
-  // uIntro grows particles from nothing during the page-load ignition.
-  gl_PointSize = (mix(2.0, 4.0, aDepth) + influence * 2.0) * uIntro;
+  vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+  gl_Position = projectionMatrix * mvPosition;
+
+  // Size: depth-tinted base, a pop near the cursor, and perspective scaling so
+  // nearer particles read larger. Divided by view distance, clamped so distant
+  // particles never vanish entirely. uIntro grows them in during ignition.
+  float base = mix(1.8, 3.6, aDepth) + influence * 2.0;
+  float perspective = 60.0 / max(-mvPosition.z, 1.0);
+  gl_PointSize = base * clamp(perspective, 0.5, 1.5) * uIntro;
 }
 `;
 
@@ -115,8 +120,8 @@ void main() {
     discard;
   }
   
-  // Smooth falloff at edges
-  float alpha = 1.0 - smoothstep(0.6, 1.0, r);
+  // Soft round sprite: bright core with a smooth halo out to the edge.
+  float alpha = 1.0 - smoothstep(0.15, 1.0, r);
   
   // Color: iris (#6E63F2) → iris-soft (#A79DF9) by depth
   vec3 iris = vec3(0.431, 0.388, 0.949);      // #6E63F2
@@ -127,6 +132,6 @@ void main() {
   vec3 color = mix(baseColor, uFormationColor, uFormation * 0.7);
 
   // Additive blending + fade; uIntro fades the whole field in on load.
-  gl_FragColor = vec4(color, alpha * 0.8 * uIntro);
+  gl_FragColor = vec4(color, alpha * 0.75 * uIntro);
 }
 `;
