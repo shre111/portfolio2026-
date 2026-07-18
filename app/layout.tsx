@@ -41,6 +41,14 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#08080F" />
         <meta name="color-scheme" content="dark" />
+        {/* Preload the display face only (§7) — it renders the LCP headline. */}
+        <link
+          rel="preload"
+          href="/fonts/clash-display-600.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
       </head>
       <body>
         <LayoutProvider>{children}</LayoutProvider>
