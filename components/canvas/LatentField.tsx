@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { gsap } from 'gsap';
 import * as THREE from 'three';
 import { useMousePosition } from '@/hooks/useMousePosition';
 import { useScrollStore } from '@/lib/store';
@@ -82,26 +81,31 @@ export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
   // useFrame reads/writes it without triggering re-renders.
   const loadedFormation = useRef<FormationType | null>(null);
 
-  // Page-load ignition: grow + fade the field in from nothing (§6).
+  // Page-load ignition progress (0→1), advanced in useFrame below.
+  //
+  // This deliberately does NOT tween the uniform with gsap. That left uIntro
+  // pinned at 0 — and because gl_PointSize is multiplied by uIntro, every
+  // particle rendered at zero size and the whole field was invisible. Driving
+  // ignition from the render loop keeps it on the same clock that draws it.
+  const intro = useRef(0);
+
+  // Reduced motion → fully lit immediately, no animation (§9).
   useEffect(() => {
-    if (reducedMotion) {
-      uniforms.uIntro.value = 1;
-      return;
-    }
-    uniforms.uIntro.value = 0;
-    const tween = gsap.to(uniforms.uIntro, {
-      value: 1,
-      duration: 1.4,
-      ease: 'power2.out',
-    });
-    return () => {
-      tween.kill();
-    };
+    const lit = reducedMotion ? 1 : 0;
+    intro.current = lit;
+    uniforms.uIntro.value = lit;
   }, [reducedMotion, uniforms]);
 
   useFrame((_, delta) => {
     const material = materialRef.current;
     if (!material) return;
+
+    // Advance the ignition ramp (~1.4s, eased out) unless already lit.
+    if (intro.current < 1) {
+      intro.current = Math.min(1, intro.current + delta / 1.4);
+      const t = intro.current;
+      material.uniforms.uIntro.value = 1 - Math.pow(1 - t, 3);
+    }
 
     // Reduced motion (§9): freeze the field completely — no drift, no cursor
     // ripple. The particles stay as a static starfield.
