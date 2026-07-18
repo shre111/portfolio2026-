@@ -4,8 +4,15 @@ import { Canvas } from '@react-three/fiber';
 import { Bloom, Vignette, EffectComposer } from '@react-three/postprocessing';
 import { LatentField } from './LatentField';
 import { CameraRig } from './CameraRig';
+import { useDeviceTier, TIER_PARTICLE_COUNT } from '@/hooks/useDeviceTier';
 
 export function Scene() {
+  const tier = useDeviceTier();
+
+  // Low-power devices skip the field entirely and fall back to the static
+  // gradient + 2D content already in the DOM (§7).
+  if (tier === 'low') return null;
+
   return (
     <div className="fixed inset-0 w-full h-screen pointer-events-none">
       <Canvas
@@ -25,8 +32,8 @@ export function Scene() {
         {/* Camera rig for scroll choreography */}
         <CameraRig />
 
-        {/* Particle field (the signature) */}
-        <LatentField particleCount={12000} />
+        {/* Particle field (the signature), scaled to the device tier (§7) */}
+        <LatentField particleCount={TIER_PARTICLE_COUNT[tier]} />
 
         {/* Postprocessing */}
         <EffectComposer>
