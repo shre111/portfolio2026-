@@ -67,6 +67,8 @@
     @apply bg-ink text-text font-sans antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Nothing should ever scroll the page sideways on mobile (§9). */
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -175,6 +177,18 @@
     rgba(8, 8, 15, 0.88) 0%,
     rgba(8, 8, 15, 0.7) 55%,
     rgba(8, 8, 15, 0) 100%
+  );
+}
+
+/* Hero scrim: lighter than .section-scrim so the signature particle field stays
+   prominent, while the name/tagline keep their contrast. Must be translucent —
+   an opaque layer here would hide the field entirely. */
+.hero-scrim {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(8, 8, 15, 0.72) 0%,
+    rgba(8, 8, 15, 0.32) 45%,
+    rgba(8, 8, 15, 0) 75%
   );
 }
 

@@ -5,6 +5,11 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  future: {
+    // Touch replaces hover (§9): only apply hover: styles where hover exists,
+    // so taps don't leave cards stuck in their hover state.
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     extend: {
       colors: {

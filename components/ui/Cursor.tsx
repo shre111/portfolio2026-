@@ -14,6 +14,10 @@ export function Cursor() {
   const ringRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useScrollStore((s) => s.reducedMotion);
   const [enabled, setEnabled] = useState(false);
+  // Stay invisible until the pointer actually moves — otherwise the ring sits
+  // parked in the middle of the hero on load.
+  const [moved, setMoved] = useState(false);
+  const hasMoved = useRef(false);
 
   useEffect(() => {
     // Skip on touch/coarse pointers and when the user prefers reduced motion.
@@ -28,6 +32,13 @@ export function Cursor() {
     let raf = 0;
 
     const onMove = (e: MouseEvent) => {
+      if (!hasMoved.current) {
+        hasMoved.current = true;
+        setMoved(true);
+        // Jump the ring to the pointer so it doesn't fly in from center.
+        ring.x = e.clientX;
+        ring.y = e.clientY;
+      }
       pos.x = e.clientX;
       pos.y = e.clientY;
       if (dotRef.current) {
@@ -67,8 +78,18 @@ export function Cursor() {
 
   return (
     <>
-      <div ref={ringRef} className="cursor-ring" aria-hidden="true" />
-      <div ref={dotRef} className="cursor-dot" aria-hidden="true" />
+      <div
+        ref={ringRef}
+        className="cursor-ring"
+        style={{ opacity: moved ? 1 : 0 }}
+        aria-hidden="true"
+      />
+      <div
+        ref={dotRef}
+        className="cursor-dot"
+        style={{ opacity: moved ? 1 : 0 }}
+        aria-hidden="true"
+      />
     </>
   );
 }
