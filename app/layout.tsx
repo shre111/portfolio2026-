@@ -1,33 +1,73 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { LayoutProvider } from '@/components/providers/LayoutProvider';
+import { content } from '@/lib/content';
+
+const { identity } = content;
+const DESCRIPTION =
+  'AI/LLM Integration · RAG Pipelines · Multi-Agent Systems · Generative AI · Full Stack.';
+const TITLE = `${identity.name} | ${identity.title}`;
+
+// Set NEXT_PUBLIC_SITE_URL to the deployed origin (e.g. the Vercel URL) so
+// absolute OG/canonical URLs resolve. Falls back to localhost in development.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 export const metadata: Metadata = {
-  title: 'Shreya Dantani | Senior Full Stack Engineer',
-  description: 'AI/LLM Integration · RAG Pipelines · Multi-Agent Systems · Generative AI · Full Stack.',
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
   keywords: [
     'Full Stack Engineer',
     'AI Systems',
     'LLM Integration',
+    'RAG',
+    'Multi-Agent Systems',
     'React',
     'Next.js',
     'TypeScript',
     'Node.js',
   ],
-  authors: [{ name: 'Shreya Dantani', url: 'https://shreya-dantani.com' }],
-  creator: 'Shreya Dantani',
+  authors: [{ name: identity.name, url: `https://${identity.links.github}` }],
+  creator: identity.name,
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://shreya-dantani.com',
-    siteName: 'Shreya Dantani',
-    title: 'Shreya Dantani | Senior Full Stack Engineer',
-    description: 'AI/LLM Integration · RAG Pipelines · Multi-Agent Systems · Generative AI · Full Stack.',
+    url: SITE_URL,
+    siteName: identity.name,
+    title: TITLE,
+    description: DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    creator: '@shreya_dantani',
+    title: TITLE,
+    description: DESCRIPTION,
   },
+};
+
+/** Structured data (§9). Real values only — straight from content.ts (§8). */
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: identity.name,
+  jobTitle: identity.title,
+  email: `mailto:${identity.email}`,
+  telephone: identity.phone,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Ahmedabad',
+    addressRegion: 'Gujarat',
+    addressCountry: 'IN',
+  },
+  url: SITE_URL,
+  sameAs: [
+    `https://${identity.links.linkedin}`,
+    `https://${identity.links.github}`,
+  ],
+  alumniOf: {
+    '@type': 'CollegeOrUniversity',
+    name: content.education.institution,
+  },
+  knowsAbout: content.skills.flatMap((group) => group.skills),
 };
 
 export default function RootLayout({
@@ -48,6 +88,10 @@ export default function RootLayout({
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
       </head>
       <body>
