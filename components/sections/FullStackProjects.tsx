@@ -12,6 +12,7 @@ export function FullStackProjects() {
   return (
     <section
       id="fullstack-projects"
+      aria-label="Full-stack projects"
       className="relative w-full bg-ink-2 py-32 px-6"
     >
       <div className="mx-auto max-w-6xl">

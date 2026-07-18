@@ -15,7 +15,11 @@ export function Contact() {
   const { identity } = content;
 
   return (
-    <section id="contact" className="relative w-full py-32 px-6">
+    <section
+      id="contact"
+      aria-label="Contact"
+      className="section-scrim relative w-full py-32 px-6"
+    >
       <div className="mx-auto max-w-3xl text-center">
         <Reveal
           as="p"

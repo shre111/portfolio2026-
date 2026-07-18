@@ -103,11 +103,15 @@ export function LatentField({ particleCount = 10000 }: LatentFieldProps) {
     const material = materialRef.current;
     if (!material) return;
 
-    material.uniforms.uTime.value += delta;
-    material.uniforms.uMouse.value.set(
-      mousePos.current.x,
-      1 - mousePos.current.y
-    );
+    // Reduced motion (§9): freeze the field completely — no drift, no cursor
+    // ripple. The particles stay as a static starfield.
+    if (!reducedMotion) {
+      material.uniforms.uTime.value += delta;
+      material.uniforms.uMouse.value.set(
+        mousePos.current.x,
+        1 - mousePos.current.y
+      );
+    }
 
     // Read scroll state non-reactively so scrolling never re-renders the field.
     const { activeSection, sectionProgress } = useScrollStore.getState();

@@ -37,6 +37,7 @@ export function Hero() {
   return (
     <section
       id="hero"
+      aria-label="Introduction"
       className="relative w-full min-h-screen flex items-center justify-center px-6 overflow-hidden"
     >
       {/* Background gradient scrim (subtle) */}

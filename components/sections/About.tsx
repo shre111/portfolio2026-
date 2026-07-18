@@ -5,7 +5,11 @@ import { Reveal } from '@/components/ui/Reveal';
 
 export function About() {
   return (
-    <section id="about" className="relative w-full py-32 px-6">
+    <section
+      id="about"
+      aria-label="About"
+      className="section-scrim relative w-full py-32 px-6"
+    >
       <div className="max-w-4xl mx-auto">
         <Reveal as="h2" className="font-display text-h2 mb-8">
           About
