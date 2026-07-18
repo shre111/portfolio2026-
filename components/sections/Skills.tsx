@@ -10,7 +10,11 @@ import { Reveal } from '@/components/ui/Reveal';
  */
 export function Skills() {
   return (
-    <section id="skills" className="relative w-full py-32 px-6">
+    <section
+      id="skills"
+      aria-label="Skills"
+      className="section-scrim relative w-full py-32 px-6"
+    >
       <div className="mx-auto max-w-6xl">
         <Reveal
           as="p"

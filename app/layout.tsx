@@ -51,6 +51,10 @@ export default function RootLayout({
         />
       </head>
       <body>
+        {/* First focusable element — lets keyboard users bypass the nav (§9). */}
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <LayoutProvider>{children}</LayoutProvider>
       </body>
     </html>

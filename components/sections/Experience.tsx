@@ -5,7 +5,11 @@ import { Reveal } from '@/components/ui/Reveal';
 
 export function Experience() {
   return (
-    <section id="experience" className="relative w-full py-32 px-6 bg-ink-2">
+    <section
+      id="experience"
+      aria-label="Experience"
+      className="relative w-full py-32 px-6 bg-ink-2"
+    >
       <div className="max-w-4xl mx-auto">
         <Reveal as="h2" className="font-display text-h2 mb-16">
           Experience

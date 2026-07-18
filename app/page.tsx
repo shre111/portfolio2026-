@@ -19,7 +19,7 @@ const Scene = dynamic(() => import('@/components/canvas/Scene').then(m => ({ def
 
 export default function Home() {
   return (
-    <main className="w-full bg-ink relative">
+    <main id="main-content" className="w-full bg-ink relative">
       {/* Custom cursor (fine-pointer, motion-safe devices only) */}
       <Cursor />
 

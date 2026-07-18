@@ -124,6 +124,65 @@
   box-sizing: border-box;
 }
 
+/* ===== ACCESSIBILITY (§9) ===== */
+/* Visible focus ring in iris on every keyboard-focused control. */
+:focus-visible {
+  outline: 2px solid var(--iris);
+  outline-offset: 3px;
+}
+
+/* Skip-to-content: hidden until focused, then slides into the top-left. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  margin: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--iris);
+  border-radius: 8px;
+  background: var(--ink-2);
+  color: var(--text);
+  font-family: var(--font-jetbrains);
+  font-size: 0.8rem;
+  transform: translateY(-150%);
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Scrim: keeps text legible over the busy particle field (§9 contrast).
+   Sections with an opaque surface don't need it. */
+.section-scrim {
+  position: relative;
+}
+
+.section-scrim > * {
+  position: relative;
+  z-index: 1;
+}
+
+.section-scrim::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(8, 8, 15, 0.88) 0%,
+    rgba(8, 8, 15, 0.7) 55%,
+    rgba(8, 8, 15, 0) 100%
+  );
+}
+
+/* The custom cursor must never hide a keyboard user's focus ring. */
+.has-custom-cursor *:focus-visible {
+  outline: 2px solid var(--iris);
+}
+
 /* ===== CUSTOM CURSOR (§4) ===== */
 /* Only hide the native cursor once the JS custom cursor is actually active. */
 .has-custom-cursor,

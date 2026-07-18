@@ -15,7 +15,11 @@ export function AIProjects() {
   const rest = projects.filter((p) => p.id !== featured.id);
 
   return (
-    <section id="ai-projects" className="relative w-full py-32 px-6">
+    <section
+      id="ai-projects"
+      aria-label="AI projects"
+      className="section-scrim relative w-full py-32 px-6"
+    >
       <div className="mx-auto max-w-6xl">
         <Reveal
           as="p"
